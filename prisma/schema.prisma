@@ -9,17 +9,29 @@ datasource db {
 }
 
 model User {
-  id       Int    @id @default(autoincrement())
-  username String @unique
-  password String
-  secrets Secret[]
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String
+  secrets   Secret[]
+  generalFiles   GeneralFile[]
 }
 
 model Secret {
-  id    Int    @id @default(autoincrement())
-  key   String
-  value String
-  userId Int
-  user User @relation(fields: [userId], references: [id])
+  id        Int     @id @default(autoincrement())
+  key       String
+  value     String
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@unique([userId, key])
+}
+
+model GeneralFile {
+  id        Int     @id @default(autoincrement())
+  key       String
+  value     String
+  userId    Int
+  user      User    @relation(fields: [userId], references: [id])
+
   @@unique([userId, key])
 }
