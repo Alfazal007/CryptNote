@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod"
 
 export const SigninType = z.object({
     username: z.string({ message: "Username not provided" })
