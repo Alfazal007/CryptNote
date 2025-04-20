@@ -8,17 +8,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// sudo docker run -e POSTGRES_PASSWORD=mysecretpassword -d -p 5432:5432 postgres
 model User {
   id       Int    @id @default(autoincrement())
   username String @unique
   password String
+  secrets Secret[]
 }
 
 model Secret {
   id    Int    @id @default(autoincrement())
   key   String
   value String
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+  @@unique([userId, key])
 }
-
-// aes -> base64 -> base58 -> des

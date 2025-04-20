@@ -1,11 +1,11 @@
-import { decryptAES, } from "./aesEncryption"
 import { decryptBase64, } from "./base64Encryption"
 import { decryptBase58, } from "./base58Encryption"
+import { decryptAES } from "./aesEncryption"
 
-export const decryptFull = (valueToBeDecrypted: string): string => {
-    const base58DecodedData = decryptBase58(valueToBeDecrypted)
+export const decryptFull = (valueToBeDecrypted: string, password: string): string => {
+    const aesDecryptedData = decryptAES(valueToBeDecrypted, password)
+    const base58DecodedData = decryptBase58(aesDecryptedData)
     const base64DecodedData = decryptBase64(base58DecodedData)
-    const aesDecryptedData = decryptAES(base64DecodedData)
-    return aesDecryptedData
+    return base64DecodedData
 }
 

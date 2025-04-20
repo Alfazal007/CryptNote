@@ -8,4 +8,8 @@ export const secretType = z.object({
     secret: z.string({ message: "Secret should be provided" })
         .min(1, { message: "The minimum size of secret is 1 characters" })
         .max(255, { message: "The maximum size of secret is 255 characters" }),
+
+    password: z.string({ message: "Password not provided" })
+        .min(6, { message: "The minimum length of password is 6" })
+        .max(20, { message: "The maximum length of password is 20" })
 })
