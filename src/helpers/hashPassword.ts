@@ -14,3 +14,11 @@ export async function hashPassword(password: string): Promise<Result<string>> {
         data: hashedPasswordResult.data
     }
 }
+
+export async function isPasswordCorrect(plainPassword: string, hashedPassword: string): Promise<boolean> {
+    const isPasswordCorrectResult = await tryCatch(bcrypt.compare(plainPassword, hashedPassword))
+    if (isPasswordCorrectResult.error) {
+        return false
+    }
+    return isPasswordCorrectResult.data
+}

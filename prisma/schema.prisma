@@ -14,3 +14,11 @@ model User {
   username String @unique
   password String
 }
+
+model Secret {
+  id    Int    @id @default(autoincrement())
+  key   String
+  value String
+}
+
+// aes -> base64 -> base58 -> des

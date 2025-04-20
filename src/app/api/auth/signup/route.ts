@@ -2,8 +2,7 @@ import { checkUsernameExists, ExistsOutput } from "@/helpers/checkUsernameExists
 import { hashPassword } from "@/helpers/hashPassword"
 import { tryCatch } from "@/helpers/tryCatch"
 import { prisma } from "@/prisma"
-import { SignupType } from "@/types/authTypes/signUpType"
-import { parse } from "node:url"
+import { SignUpSignInType } from "@/types/authTypes/signUpType"
 
 export async function POST(request: Request) {
     const body = await tryCatch(request.json())
@@ -15,7 +14,7 @@ export async function POST(request: Request) {
         })
     }
 
-    const parsedDataResult = SignupType.safeParse(body.data)
+    const parsedDataResult = SignUpSignInType.safeParse(body.data)
     if (!parsedDataResult.success) {
         const errors: string[] = []
         parsedDataResult.error.errors.forEach((err) => {
