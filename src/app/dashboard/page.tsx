@@ -30,6 +30,7 @@ export default function DashboardPage() {
                     return
                 }
                 getNormalData()
+                getSecretData()
             } catch (error) {
                 console.log('Error fetching data:', error);
             }
@@ -46,10 +47,21 @@ export default function DashboardPage() {
 
     async function getNormalData() {
         try {
-            console.log("fetching data")
             const generalDataResponse = await axios.get(`${DOMAIN}/api/general/getKeys`)
             if (generalDataResponse.status === 200) {
                 setGeneralFiles(generalDataResponse.data.data)
+            }
+        } catch (err) {
+            console.log(err)
+            toast("Issue fetching data")
+        }
+    }
+
+    async function getSecretData() {
+        try {
+            const secretDataResponse = await axios.get(`${DOMAIN}/api/secret/getKeys`)
+            if (secretDataResponse.status === 200) {
+                setSecretFiles(secretDataResponse.data.data)
             }
         } catch (err) {
             console.log(err)
@@ -180,6 +192,7 @@ export default function DashboardPage() {
                 isOpen={isSecretDialogOpen}
                 onClose={() => setIsSecretDialogOpen(false)}
                 onDelete={handleDeleteSecretFile}
+                getSecretData={getSecretData}
             />
         </div>
     );

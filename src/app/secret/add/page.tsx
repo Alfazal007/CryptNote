@@ -21,8 +21,9 @@ import { Navbar } from '@/components/navbar';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lock, ArrowLeft, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
-import { mockSecretFiles } from '@/lib/types';
 import { toast } from 'sonner';
+import axios from 'axios';
+import { DOMAIN } from '@/constants';
 
 const formSchema = z.object({
     key: z.string().min(3, {
@@ -36,11 +37,7 @@ const formSchema = z.object({
     password: z.string().min(6, {
         message: 'Password must be at least 6 characters.',
     }),
-    confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-});
+})
 
 export default function AddSecretFilePage() {
     const router = useRouter();
@@ -53,22 +50,29 @@ export default function AddSecretFilePage() {
             key: '',
             content: '',
             password: '',
-            confirmPassword: '',
         },
     });
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        setIsLoading(true);
-
-        // In a real app, you would send this to your backend
-        console.log(values);
-
-        // Simulate API call
-        setTimeout(() => {
-            setIsLoading(false);
-            toast.success('Secret file created successfully');
-            router.push('/dashboard');
-        }, 1000);
+    async function onSubmit() {
+        try {
+            setIsLoading(true)
+            const { key, content, password } = form.getValues()
+            const createSecretResponse = await axios.post(`${DOMAIN}/api/secret/create`, {
+                key,
+                secret: content,
+                password
+            })
+            if (createSecretResponse.status == 201) {
+                toast("Created the secret successfully")
+                router.push("/dashboard")
+            } else {
+                toast("There was an issue creating the secret")
+            }
+        } catch (err: any) {
+            toast(err.response.data.message)
+        } finally {
+            setIsLoading(false)
+        }
     }
 
     const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -104,7 +108,7 @@ export default function AddSecretFilePage() {
                         </CardHeader>
                         <CardContent>
                             <Form {...form}>
-                                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                                <form className="space-y-6">
                                     <FormField
                                         control={form.control}
                                         name="key"
@@ -152,24 +156,7 @@ export default function AddSecretFilePage() {
                                                     <FormControl>
                                                         <Input
                                                             type="password"
-                                                            placeholder="Create a password to protect this secret"
-                                                            {...field}
-                                                        />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
-                                        <FormField
-                                            control={form.control}
-                                            name="confirmPassword"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Confirm Password</FormLabel>
-                                                    <FormControl>
-                                                        <Input
-                                                            type="password"
-                                                            placeholder="Confirm your protection password"
+                                                            placeholder="Enter your original password"
                                                             {...field}
                                                         />
                                                     </FormControl>
@@ -183,7 +170,7 @@ export default function AddSecretFilePage() {
                                             <ShieldCheck className="h-4 w-4 mr-1 text-green-500" />
                                             <span>Password protected content</span>
                                         </div>
-                                        <Button type="submit" disabled={isLoading}>
+                                        <Button onClick={onSubmit} disabled={isLoading}>
                                             {isLoading ? 'Creating...' : 'Create Secret File'}
                                         </Button>
                                     </div>
@@ -192,7 +179,7 @@ export default function AddSecretFilePage() {
                         </CardContent>
                     </Card>
                 </div>
-            </main>
-        </div>
+            </main >
+        </div >
     );
 }

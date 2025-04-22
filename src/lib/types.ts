@@ -7,8 +7,6 @@ export type GeneralFile = {
 export type SecretFile = {
     id: number;
     key: string;
-    content: string;
-    passwordHash: string;
     createdAt: string;
 };
 

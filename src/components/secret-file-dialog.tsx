@@ -14,40 +14,70 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { SecretFile } from '@/lib/types';
+import axios from 'axios';
+import { DOMAIN } from '@/constants';
+import { toast } from 'sonner';
 
 interface SecretFileDialogProps {
     file: SecretFile | null;
     isOpen: boolean;
     onClose: () => void;
     onDelete?: (id: number) => void;
+    getSecretData: () => Promise<void>
 }
 
-export function SecretFileDialog({ file, isOpen, onClose, onDelete }: SecretFileDialogProps) {
+export function SecretFileDialog({ file, isOpen, onClose, onDelete, getSecretData }: SecretFileDialogProps) {
     const [password, setPassword] = useState('');
     const [isVerified, setIsVerified] = useState(false);
-    const [isError, setIsError] = useState(false);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+    const [secret, setSecret] = useState("")
 
-    const handleVerify = () => {
-        if (file && password === file.passwordHash) { // In a real app, you'd verify against a hash
-            setIsVerified(true);
-            setIsError(false);
-        } else {
-            setIsError(true);
+    const handleVerify = async () => {
+        try {
+            if (!file) {
+                return
+            }
+            const openSecretResponse = await axios.post(`${DOMAIN}/api/secret/get`, {
+                key: file.key,
+                password
+            })
+            if (openSecretResponse.status == 200) {
+                setIsVerified(true)
+                setSecret(openSecretResponse.data.secret)
+            }
+        } catch (err: any) {
+            toast(err.response.data.message)
         }
     };
 
-    const handleDelete = () => {
-        if (file && onDelete) {
-            onDelete(file.id);
-            onClose();
+    const handleDelete = async () => {
+        try {
+            if (!file) {
+                return
+            }
+            const deleteResult = await axios.post(`${DOMAIN}/api/secret/delete`, {
+                key: file.key,
+                password
+            })
+            if (deleteResult.status == 200) {
+                toast("Deleted secret file successfully")
+            } else {
+                toast("Issue deleting the secret")
+            }
+            await getSecretData()
+        } catch (err: any) {
+            toast(err.response.data.message)
+        } finally {
+            onClose()
+            handleClose()
         }
     };
 
     const handleClose = () => {
-        setPassword('');
+        console.log("ran")
+        setPassword('')
+        setSecret("")
         setIsVerified(false);
-        setIsError(false);
         setIsDeleteConfirmOpen(false);
         onClose();
     };
@@ -75,23 +105,16 @@ export function SecretFileDialog({ file, isOpen, onClose, onDelete }: SecretFile
                                 value={password}
                                 onChange={(e) => {
                                     setPassword(e.target.value);
-                                    setIsError(false);
                                 }}
-                                className={isError ? "border-red-500" : ""}
                             />
-                            {isError && (
-                                <p className="text-sm text-red-500">Incorrect password. Please try again.</p>
-                            )}
                         </div>
-                        <Button onClick={handleVerify} className="w-full">
-                            Verify Password
+                        <Button onClick={handleVerify} className="w-full"
+                            disabled={
+                                password ? false : true
+                            }
+                        >
+                            Open Secret
                         </Button>
-                    </div>
-                ) : (
-                    <>
-                        <ScrollArea className="h-[200px] mt-2 p-4 border rounded-md">
-                            <div className="whitespace-pre-wrap">{file.content}</div>
-                        </ScrollArea>
                         <DialogFooter className="flex flex-row justify-between sm:justify-between">
                             {isDeleteConfirmOpen ? (
                                 <>
@@ -121,6 +144,9 @@ export function SecretFileDialog({ file, isOpen, onClose, onDelete }: SecretFile
                                     </Button>
                                     {onDelete && (
                                         <Button
+                                            disabled={
+                                                password ? false : true
+                                            }
                                             variant="destructive"
                                             onClick={() => setIsDeleteConfirmOpen(true)}
                                         >
@@ -130,9 +156,15 @@ export function SecretFileDialog({ file, isOpen, onClose, onDelete }: SecretFile
                                 </>
                             )}
                         </DialogFooter>
+                    </div>
+                ) : (
+                    <>
+                        <ScrollArea className="h-[200px] mt-2 p-4 border rounded-md">
+                            <div className="whitespace-pre-wrap">{secret}</div>
+                        </ScrollArea>
                     </>
                 )}
             </DialogContent>
-        </Dialog>
+        </Dialog >
     );
 }
