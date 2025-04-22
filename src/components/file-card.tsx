@@ -3,9 +3,10 @@
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FileText, Lock } from 'lucide-react';
+import { useEffect } from 'react';
 
 interface FileCardProps {
-    id: string;
+    id: number;
     title: string;
     date: string;
     isSecret: boolean;

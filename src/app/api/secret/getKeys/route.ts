@@ -18,7 +18,8 @@ export async function GET(request: NextRequest) {
             userId: id
         }, select: {
             id: true,
-            key: true
+            key: true,
+            createdAt: true
         }
     }))
 

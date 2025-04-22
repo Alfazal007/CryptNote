@@ -6,13 +6,15 @@ import { Navbar } from '@/components/navbar';
 import { FileCard } from '@/components/file-card';
 import { GeneralFileDialog } from '@/components/general-file-dialog';
 import { SecretFileDialog } from '@/components/secret-file-dialog';
-import { GeneralFile, SecretFile, mockGeneralFiles, mockSecretFiles } from '@/lib/types';
+import { GeneralFile, SecretFile, } from '@/lib/types';
 import { FileText, Lock, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { UserContext } from '../context/UserContext';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
+import axios from 'axios';
+import { DOMAIN } from '@/constants';
 
 export default function DashboardPage() {
     const { user, fetchMe } = useContext(UserContext)
@@ -25,20 +27,33 @@ export default function DashboardPage() {
                     router.push("/auth/signin")
                     return
                 }
+                getNormalData()
             } catch (error) {
-                console.error('Error fetching data:', error);
+                console.log('Error fetching data:', error);
             }
         };
         fetchData();
     }, [])
 
-    const [generalFiles, setGeneralFiles] = useState<GeneralFile[]>(mockGeneralFiles);
-    const [secretFiles, setSecretFiles] = useState<SecretFile[]>(mockSecretFiles);
+    const [generalFiles, setGeneralFiles] = useState<GeneralFile[]>([]);
+    const [secretFiles, setSecretFiles] = useState<SecretFile[]>([]);
     const [selectedGeneralFile, setSelectedGeneralFile] = useState<GeneralFile | null>(null);
     const [selectedSecretFile, setSelectedSecretFile] = useState<SecretFile | null>(null);
     const [isGeneralDialogOpen, setIsGeneralDialogOpen] = useState(false);
     const [isSecretDialogOpen, setIsSecretDialogOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
+
+    async function getNormalData() {
+        try {
+            const generalDataResponse = await axios.get(`${DOMAIN}/api/general/getKeys`)
+            if (generalDataResponse.status === 200) {
+                setGeneralFiles(generalDataResponse.data.data)
+            }
+        } catch (err) {
+            console.error(err)
+            toast("Issue fetching data")
+        }
+    }
 
     const filteredGeneralFiles = generalFiles.filter(file =>
         file.key.toLowerCase().includes(searchQuery.toLowerCase())
@@ -58,12 +73,12 @@ export default function DashboardPage() {
         setIsSecretDialogOpen(true);
     };
 
-    const handleDeleteGeneralFile = (id: string) => {
+    const handleDeleteGeneralFile = (id: number) => {
         setGeneralFiles(prev => prev.filter(file => file.id !== id));
         toast.success('File deleted successfully');
     };
 
-    const handleDeleteSecretFile = (id: string) => {
+    const handleDeleteSecretFile = (id: number) => {
         setSecretFiles(prev => prev.filter(file => file.id !== id));
         toast.success('Secret file deleted successfully');
     };

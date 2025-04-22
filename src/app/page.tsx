@@ -27,7 +27,7 @@ export default function Home() {
                                 </p>
                             </div>
                             <div className="space-x-4">
-                                <Link href="/auth/signup">
+                                <Link href="/dashboard">
                                     <Button className="px-8 group">
                                         Get Started
                                         <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />

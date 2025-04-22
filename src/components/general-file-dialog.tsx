@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -12,16 +12,23 @@ import {
 } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { GeneralFile } from '@/lib/types';
+import axios from 'axios';
+import { DOMAIN } from '@/constants';
 
 interface GeneralFileDialogProps {
     file: GeneralFile | null;
     isOpen: boolean;
     onClose: () => void;
-    onDelete?: (id: string) => void;
+    onDelete?: (id: number) => void;
 }
 
 export function GeneralFileDialog({ file, isOpen, onClose, onDelete }: GeneralFileDialogProps) {
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+    const [content, setContent] = useState<string>("loading...");
+
+    useEffect(() => {
+        getContent()
+    }, [file])
 
     const handleDelete = () => {
         if (file && onDelete) {
@@ -29,6 +36,21 @@ export function GeneralFileDialog({ file, isOpen, onClose, onDelete }: GeneralFi
             onClose();
         }
     };
+
+    async function getContent() {
+        try {
+            if (!file) {
+                return
+            }
+            const contentResponse = await axios.post(`${DOMAIN}/api/general/get`, {
+                key: file.key
+            })
+            if (contentResponse.status == 200) {
+                setContent(contentResponse.data.data)
+            }
+        } catch (err) {
+        }
+    }
 
     if (!file) return null;
 
@@ -42,7 +64,7 @@ export function GeneralFileDialog({ file, isOpen, onClose, onDelete }: GeneralFi
                     </DialogDescription>
                 </DialogHeader>
                 <ScrollArea className="h-[300px] mt-2 p-4 border rounded-md">
-                    <div className="whitespace-pre-wrap">{file.content}</div>
+                    <div className="whitespace-pre-wrap">{content}</div>
                 </ScrollArea>
                 <DialogFooter className="flex flex-row justify-between sm:justify-between">
                     {isDeleteConfirmOpen ? (

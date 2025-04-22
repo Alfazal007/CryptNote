@@ -20,7 +20,6 @@ import { Navbar } from '@/components/navbar';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { mockGeneralFiles } from '@/lib/types';
 import { toast } from 'sonner';
 
 const formSchema = z.object({

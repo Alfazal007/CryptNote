@@ -19,7 +19,7 @@ interface SecretFileDialogProps {
     file: SecretFile | null;
     isOpen: boolean;
     onClose: () => void;
-    onDelete?: (id: string) => void;
+    onDelete?: (id: number) => void;
 }
 
 export function SecretFileDialog({ file, isOpen, onClose, onDelete }: SecretFileDialogProps) {
