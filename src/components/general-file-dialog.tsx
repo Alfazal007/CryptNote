@@ -14,15 +14,16 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { GeneralFile } from '@/lib/types';
 import axios from 'axios';
 import { DOMAIN } from '@/constants';
+import { toast } from 'sonner';
 
 interface GeneralFileDialogProps {
     file: GeneralFile | null;
     isOpen: boolean;
     onClose: () => void;
-    onDelete?: (id: number) => void;
+    getNormalData: () => Promise<void>
 }
 
-export function GeneralFileDialog({ file, isOpen, onClose, onDelete }: GeneralFileDialogProps) {
+export function GeneralFileDialog({ file, isOpen, onClose, getNormalData }: GeneralFileDialogProps) {
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [content, setContent] = useState<string>("loading...");
 
@@ -30,10 +31,23 @@ export function GeneralFileDialog({ file, isOpen, onClose, onDelete }: GeneralFi
         getContent()
     }, [file])
 
-    const handleDelete = () => {
-        if (file && onDelete) {
-            onDelete(file.id);
-            onClose();
+    const handleDelete = async () => {
+        if (file) {
+            try {
+                const deleteResponse = await axios.post(`${DOMAIN}/api/general/delete`, {
+                    key: file.key
+                })
+                console.log({ deleteResponse })
+                if (deleteResponse.status == 200) {
+                    toast("Deleted the data successfully")
+                    getNormalData()
+                }
+            } catch (err) {
+                toast("Issue deleting the data")
+            } finally {
+                setIsDeleteConfirmOpen(false)
+                onClose();
+            }
         }
     };
 
@@ -93,7 +107,7 @@ export function GeneralFileDialog({ file, isOpen, onClose, onDelete }: GeneralFi
                             <Button variant="outline" onClick={onClose}>
                                 Close
                             </Button>
-                            {onDelete && (
+                            {(
                                 <Button
                                     variant="destructive"
                                     onClick={() => setIsDeleteConfirmOpen(true)}

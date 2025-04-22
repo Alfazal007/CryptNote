@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -21,6 +21,10 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { FileText, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { UserContext } from '@/app/context/UserContext';
+import axios from 'axios';
+import { DOMAIN } from '@/constants';
+import { createTemporaryReferenceSet } from 'next/dist/server/app-render/entry-base';
 
 const formSchema = z.object({
     key: z.string().min(3, {
@@ -34,6 +38,14 @@ const formSchema = z.object({
 export default function AddGeneralFilePage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
+    const { user } = useContext(UserContext)
+
+    useEffect(() => {
+        if (!user) {
+            router.push("/dashboard")
+            return
+        }
+    }, [])
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -43,18 +55,29 @@ export default function AddGeneralFilePage() {
         },
     });
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        setIsLoading(true);
-
-        // In a real app, you would send this to your backend
-        console.log(values);
-
-        // Simulate API call
-        setTimeout(() => {
+    async function onSubmit() {
+        try {
+            setIsLoading(true);
+            const { key, content } = form.getValues()
+            const createGeneralFileResponse = await axios.post(`${DOMAIN}/api/general/create`, {
+                key,
+                generalData: content
+            })
+            if (createGeneralFileResponse.status == 201) {
+                toast("Added new data successfully")
+                router.push("/dashboard")
+            } else {
+                toast("Issue creating the data")
+            }
+        } catch (err: any) {
+            if (err.response.data.errors) {
+                toast(err.response.data.errors)
+            } else {
+                toast(err.response.data.message)
+            }
+        } finally {
             setIsLoading(false);
-            toast.success('General file created successfully');
-            router.push('/dashboard');
-        }, 1000);
+        }
     }
 
     return (
@@ -84,7 +107,7 @@ export default function AddGeneralFilePage() {
                         </CardHeader>
                         <CardContent>
                             <Form {...form}>
-                                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                                <form className="space-y-6">
                                     <FormField
                                         control={form.control}
                                         name="key"
@@ -116,7 +139,7 @@ export default function AddGeneralFilePage() {
                                         )}
                                     />
                                     <div className="flex justify-end">
-                                        <Button type="submit" disabled={isLoading}>
+                                        <Button onClick={onSubmit} disabled={isLoading}>
                                             {isLoading ? 'Creating...' : 'Create File'}
                                         </Button>
                                     </div>

@@ -55,8 +55,6 @@ export default function SignInPage() {
                 password
             })
             if (responseSignin.status == 200) {
-                toast(responseSignin.data.username)
-                toast(responseSignin.data.accessToken)
                 setUser({
                     accessToken: responseSignin.data.accessToken,
                     username: responseSignin.data.username

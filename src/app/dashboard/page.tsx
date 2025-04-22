@@ -18,7 +18,9 @@ import { DOMAIN } from '@/constants';
 
 export default function DashboardPage() {
     const { user, fetchMe } = useContext(UserContext)
+    const [generalFiles, setGeneralFiles] = useState<GeneralFile[]>([]);
     const router = useRouter()
+
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -35,7 +37,6 @@ export default function DashboardPage() {
         fetchData();
     }, [])
 
-    const [generalFiles, setGeneralFiles] = useState<GeneralFile[]>([]);
     const [secretFiles, setSecretFiles] = useState<SecretFile[]>([]);
     const [selectedGeneralFile, setSelectedGeneralFile] = useState<GeneralFile | null>(null);
     const [selectedSecretFile, setSelectedSecretFile] = useState<SecretFile | null>(null);
@@ -45,12 +46,13 @@ export default function DashboardPage() {
 
     async function getNormalData() {
         try {
+            console.log("fetching data")
             const generalDataResponse = await axios.get(`${DOMAIN}/api/general/getKeys`)
             if (generalDataResponse.status === 200) {
                 setGeneralFiles(generalDataResponse.data.data)
             }
         } catch (err) {
-            console.error(err)
+            console.log(err)
             toast("Issue fetching data")
         }
     }
@@ -71,11 +73,6 @@ export default function DashboardPage() {
     const handleOpenSecretFile = (file: SecretFile) => {
         setSelectedSecretFile(file);
         setIsSecretDialogOpen(true);
-    };
-
-    const handleDeleteGeneralFile = (id: number) => {
-        setGeneralFiles(prev => prev.filter(file => file.id !== id));
-        toast.success('File deleted successfully');
     };
 
     const handleDeleteSecretFile = (id: number) => {
@@ -175,7 +172,7 @@ export default function DashboardPage() {
                 file={selectedGeneralFile}
                 isOpen={isGeneralDialogOpen}
                 onClose={() => setIsGeneralDialogOpen(false)}
-                onDelete={handleDeleteGeneralFile}
+                getNormalData={getNormalData}
             />
 
             <SecretFileDialog
