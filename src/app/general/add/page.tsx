@@ -17,14 +17,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Navbar } from '@/components/navbar';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { UserContext } from '@/app/context/UserContext';
 import axios from 'axios';
 import { DOMAIN } from '@/constants';
-import { createTemporaryReferenceSet } from 'next/dist/server/app-render/entry-base';
 
 const formSchema = z.object({
     key: z.string().min(3, {

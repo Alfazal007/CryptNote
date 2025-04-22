@@ -26,12 +26,12 @@ interface SecretFileDialogProps {
     getSecretData: () => Promise<void>
 }
 
-export function SecretFileDialog({ file, isOpen, onClose, onDelete, getSecretData }: SecretFileDialogProps) {
+export function SecretFileDialog({ getSecretData, file, isOpen, onClose, onDelete }: SecretFileDialogProps) {
     const [password, setPassword] = useState('');
     const [isVerified, setIsVerified] = useState(false);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [secret, setSecret] = useState("")
-    const [isCopied, setIsCopied] = useState(false);
+    const [, setIsCopied] = useState(false);
 
     const handleCopy = async () => {
         if (file) {

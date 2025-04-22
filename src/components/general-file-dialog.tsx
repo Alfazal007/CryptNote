@@ -15,7 +15,6 @@ import { GeneralFile } from '@/lib/types';
 import axios from 'axios';
 import { DOMAIN } from '@/constants';
 import { toast } from 'sonner';
-import { Check, Copy } from 'lucide-react';
 
 interface GeneralFileDialogProps {
     file: GeneralFile | null;
@@ -27,7 +26,7 @@ interface GeneralFileDialogProps {
 export function GeneralFileDialog({ file, isOpen, onClose, getNormalData }: GeneralFileDialogProps) {
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [content, setContent] = useState<string>("loading...");
-    const [isCopied, setIsCopied] = useState(false);
+    const [, setIsCopied] = useState(false);
 
     useEffect(() => {
         getContent()
