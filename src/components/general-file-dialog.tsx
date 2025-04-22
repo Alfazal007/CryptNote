@@ -15,6 +15,7 @@ import { GeneralFile } from '@/lib/types';
 import axios from 'axios';
 import { DOMAIN } from '@/constants';
 import { toast } from 'sonner';
+import { Check, Copy } from 'lucide-react';
 
 interface GeneralFileDialogProps {
     file: GeneralFile | null;
@@ -26,6 +27,7 @@ interface GeneralFileDialogProps {
 export function GeneralFileDialog({ file, isOpen, onClose, getNormalData }: GeneralFileDialogProps) {
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [content, setContent] = useState<string>("loading...");
+    const [isCopied, setIsCopied] = useState(false);
 
     useEffect(() => {
         getContent()
@@ -66,6 +68,15 @@ export function GeneralFileDialog({ file, isOpen, onClose, getNormalData }: Gene
         }
     }
 
+    const handleCopy = async () => {
+        if (file) {
+            await navigator.clipboard.writeText(content);
+            setIsCopied(true);
+            toast.success('Content copied to clipboard');
+            setTimeout(() => setIsCopied(false), 2000);
+        }
+    };
+
     if (!file) return null;
 
     return (
@@ -80,6 +91,7 @@ export function GeneralFileDialog({ file, isOpen, onClose, getNormalData }: Gene
                 <ScrollArea className="h-[300px] mt-2 p-4 border rounded-md">
                     <div className="whitespace-pre-wrap">{content}</div>
                 </ScrollArea>
+
                 <DialogFooter className="flex flex-row justify-between sm:justify-between">
                     {isDeleteConfirmOpen ? (
                         <>
@@ -108,12 +120,21 @@ export function GeneralFileDialog({ file, isOpen, onClose, getNormalData }: Gene
                                 Close
                             </Button>
                             {(
-                                <Button
-                                    variant="destructive"
-                                    onClick={() => setIsDeleteConfirmOpen(true)}
-                                >
-                                    Delete
-                                </Button>
+
+                                <div>
+                                    <Button
+                                        className='mr-2'
+                                        onClick={handleCopy}
+                                    >
+                                        Copy
+                                    </Button>
+                                    <Button
+                                        variant="destructive"
+                                        onClick={() => setIsDeleteConfirmOpen(true)}
+                                    >
+                                        Delete
+                                    </Button>
+                                </div>
                             )}
                         </>
                     )}

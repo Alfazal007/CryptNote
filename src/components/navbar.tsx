@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { Button } from '@/components/ui/button';
-import { Shield, Lock } from 'lucide-react';
+import { Shield } from 'lucide-react';
 import {
     AlertDialog,
     AlertDialogAction,

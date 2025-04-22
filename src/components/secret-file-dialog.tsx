@@ -31,6 +31,16 @@ export function SecretFileDialog({ file, isOpen, onClose, onDelete, getSecretDat
     const [isVerified, setIsVerified] = useState(false);
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [secret, setSecret] = useState("")
+    const [isCopied, setIsCopied] = useState(false);
+
+    const handleCopy = async () => {
+        if (file) {
+            await navigator.clipboard.writeText(secret);
+            setIsCopied(true);
+            toast.success('Content copied to clipboard');
+            setTimeout(() => setIsCopied(false), 2000);
+        }
+    };
 
     const handleVerify = async () => {
         try {
@@ -162,6 +172,12 @@ export function SecretFileDialog({ file, isOpen, onClose, onDelete, getSecretDat
                         <ScrollArea className="h-[200px] mt-2 p-4 border rounded-md">
                             <div className="whitespace-pre-wrap">{secret}</div>
                         </ScrollArea>
+                        <Button
+                            className='mr-2'
+                            onClick={handleCopy}
+                        >
+                            Copy
+                        </Button>
                     </>
                 )}
             </DialogContent>
