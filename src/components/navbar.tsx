@@ -1,16 +1,43 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { Shield, Lock } from 'lucide-react';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from 'sonner';
+import axios from 'axios';
+import { DOMAIN } from '@/constants';
 
 export function Navbar() {
-    const pathname = usePathname() as string;
+    const pathname = usePathname();
+    const router = useRouter();
     const isAuthPage = pathname.includes('/auth');
     const isHome = pathname === '/';
     const isLoggedIn = pathname !== '/' && !isAuthPage;
+
+    const handleLogout = async () => {
+        try {
+            const logoutResponse = await axios.get(`${DOMAIN}/api/auth/logout`)
+            if (logoutResponse.status == 200) {
+                router.push('/');
+                return
+            }
+        } catch (err) {
+            toast("Issue logging out")
+        }
+    };
 
     return (
         <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
@@ -39,11 +66,25 @@ export function Navbar() {
                                     Add Secret
                                 </Button>
                             </Link>
-                            <Link href="/">
-                                <Button variant="ghost" size="sm">
-                                    Logout
-                                </Button>
-                            </Link>
+                            <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                    <Button variant="ghost" size="sm">
+                                        Logout
+                                    </Button>
+                                </AlertDialogTrigger>
+                                <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                        <AlertDialogTitle>Are you sure you want to logout?</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            You will need to sign in again to access your vault.
+                                        </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                        <AlertDialogAction onClick={handleLogout}>Logout</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                </AlertDialogContent>
+                            </AlertDialog>
                         </>
                     ) : isHome ? (
                         <>
