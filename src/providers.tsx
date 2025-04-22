@@ -1,7 +1,7 @@
 'use client';
 
 import { ThemeProvider } from 'next-themes';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { Toaster } from 'sonner';
 
 interface ProvidersProps {
@@ -9,6 +9,13 @@ interface ProvidersProps {
 }
 
 export function Providers({ children }: ProvidersProps) {
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    if (!isMounted) return null;
     return (
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             {children}

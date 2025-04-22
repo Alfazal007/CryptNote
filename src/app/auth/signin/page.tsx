@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import axios from "axios";
+import { useContext, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -19,20 +20,24 @@ import { Navbar } from '@/components/navbar';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { LogIn } from 'lucide-react';
+import { toast } from "sonner";
+import { DOMAIN } from "@/constants";
+import { UserContext } from "@/app/context/UserContext";
 
 const formSchema = z.object({
-    username: z.string().min(3, {
-        message: 'Username must be at least 3 characters.',
-    }),
+    username: z.string().min(6, {
+        message: 'Username must be at least 6 characters.',
+    }).max(20, { message: "Username must not be greater than 20 characters" }),
     password: z.string().min(6, {
         message: 'Password must be at least 6 characters.',
-    }),
+    }).max(20, { message: "Password must not be greater than 20 characters" }),
 });
 
 export default function SignInPage() {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
 
+    const { setUser } = useContext(UserContext)
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -41,16 +46,30 @@ export default function SignInPage() {
         },
     });
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        setIsLoading(true);
-        // Here you would normally call your authentication backend
-        console.log(values);
-
-        // For now, we'll just simulate a successful login
-        setTimeout(() => {
+    async function onSubmit() {
+        try {
+            setIsLoading(true);
+            const { username, password, } = form.getValues()
+            const responseSignin = await axios.post(`${DOMAIN}/api/auth/signin`, {
+                username,
+                password
+            })
+            if (responseSignin.status == 200) {
+                toast(responseSignin.data.username)
+                toast(responseSignin.data.accessToken)
+                setUser({
+                    accessToken: responseSignin.data.accessToken,
+                    username: responseSignin.data.username
+                })
+                router.push("/dashboard")
+            } else {
+                toast(responseSignin.data.message)
+            }
+        } catch (err: any) {
+            toast(err.response.data.message)
+        } finally {
             setIsLoading(false);
-            router.push('/dashboard');
-        }, 1000);
+        }
     }
 
     return (
@@ -70,7 +89,7 @@ export default function SignInPage() {
                     </CardHeader>
                     <CardContent>
                         <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                            <form className="space-y-4">
                                 <FormField
                                     control={form.control}
                                     name="username"
@@ -97,7 +116,7 @@ export default function SignInPage() {
                                         </FormItem>
                                     )}
                                 />
-                                <Button className="w-full" type="submit" disabled={isLoading}>
+                                <Button className="w-full" onClick={onSubmit} disabled={isLoading}>
                                     {isLoading ? 'Signing in...' : 'Sign In'}
                                 </Button>
                             </form>

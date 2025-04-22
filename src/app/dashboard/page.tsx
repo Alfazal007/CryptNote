@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Navbar } from '@/components/navbar';
 import { FileCard } from '@/components/file-card';
@@ -10,8 +10,28 @@ import { GeneralFile, SecretFile, mockGeneralFiles, mockSecretFiles } from '@/li
 import { FileText, Lock, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { UserContext } from '../context/UserContext';
+import { useRouter } from 'next/navigation';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DashboardPage() {
+    const { user, fetchMe } = useContext(UserContext)
+    const router = useRouter()
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await fetchMe();
+                if (!response) {
+                    router.push("/auth/signin")
+                    return
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+        fetchData();
+    }, [])
+
     const [generalFiles, setGeneralFiles] = useState<GeneralFile[]>(mockGeneralFiles);
     const [secretFiles, setSecretFiles] = useState<SecretFile[]>(mockSecretFiles);
     const [selectedGeneralFile, setSelectedGeneralFile] = useState<GeneralFile | null>(null);
@@ -48,6 +68,9 @@ export default function DashboardPage() {
         toast.success('Secret file deleted successfully');
     };
 
+    if (!user) {
+        return <Skeleton />
+    }
     return (
         <div className="min-h-screen flex flex-col">
             <Navbar />

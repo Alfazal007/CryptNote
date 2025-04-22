@@ -1,5 +1,6 @@
 'use client';
 
+import axios from "axios"
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -19,17 +20,19 @@ import { Navbar } from '@/components/navbar';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
 import { UserPlus } from 'lucide-react';
+import { toast } from 'sonner';
+import { DOMAIN } from "@/constants";
 
 const formSchema = z.object({
-    username: z.string().min(3, {
-        message: 'Username must be at least 3 characters.',
-    }),
+    username: z.string().min(6, {
+        message: 'Username must be at least 6 characters.',
+    }).max(20, { message: "Username must not be greater than 20 characters" }),
     password: z.string().min(6, {
         message: 'Password must be at least 6 characters.',
-    }),
+    }).max(20, { message: "Password must not be greater than 20 characters" }),
     confirmPassword: z.string().min(6, {
         message: 'Confirm password must be at least 6 characters.',
-    }),
+    }).max(20, { message: "Confirm password must not be greater than 20 characters" }),
 }).refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
@@ -48,16 +51,32 @@ export default function SignUpPage() {
         },
     });
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        setIsLoading(true);
-        // Here you would normally call your authentication backend
-        console.log(values);
-
-        // For now, we'll just simulate a successful registration
-        setTimeout(() => {
+    async function onSubmit() {
+        try {
+            setIsLoading(true);
+            const { username, password, confirmPassword } = form.getValues()
+            if (password !== confirmPassword) {
+                toast("Password and confirm password dont match")
+                return
+            }
+            const responseSignup = await axios.post(`${DOMAIN}/api/auth/signup`, {
+                username,
+                password
+            })
+            if (responseSignup.status !== 201) {
+                if (responseSignup.data.message)
+                    toast(responseSignup.data.message)
+                else
+                    toast("Issue signing up")
+            } else {
+                toast(responseSignup.data.message)
+                router.push("/auth/signin")
+            }
+        } catch (err: any) {
+            toast(err.response.data.message)
+        } finally {
             setIsLoading(false);
-            router.push('/dashboard');
-        }, 1000);
+        }
     }
 
     return (
@@ -77,7 +96,7 @@ export default function SignUpPage() {
                     </CardHeader>
                     <CardContent>
                         <Form {...form}>
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                            <form className="space-y-4">
                                 <FormField
                                     control={form.control}
                                     name="username"
@@ -117,7 +136,8 @@ export default function SignUpPage() {
                                         </FormItem>
                                     )}
                                 />
-                                <Button className="w-full" type="submit" disabled={isLoading}>
+
+                                <Button className="w-full" type="submit" disabled={isLoading} onClick={onSubmit} >
                                     {isLoading ? 'Creating Account...' : 'Sign Up'}
                                 </Button>
                             </form>
